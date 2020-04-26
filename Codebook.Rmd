@@ -1,0 +1,49 @@
+---
+title: "Codebook"
+author: "The Outliers 1"
+date: "4/26/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# What we need: 
+- Short descriptions on the number of cases in your dataset, and how cases were identified.
+• A table of variable codebook, each row includes the following info corresponds to a single
+variable
+o Variable name
+o Variable label: description of the variable, such as a textural description (what was
+measured, unit)
+o Valid range and variable code: valid range for quantitative variables, and the code for
+categorical variables if any (e.g. 0=no, 1=yes for yes/no variables)
+o Value indicating missing data. e.g. NA, 99999.
+• Source of data (cite any webpage, article, books etc.)
+
+# About the Cases
+
+We worked with data in the "listings.csv" file that was obtained through the website: https://www.kaggle.com/jeploretizo/san-francisco-airbnb-listings. This dataset has been initially published at Inside Airbnb (http://insideairbnb.com/get-the-data.html). The cases were identified through publicly available information through the Airbnb website. There are 8,111 unique listings and 100 variables that contribute to each listing.
+
+# Table of Variables
+
+Name                 Description             Range/Code        Missing Data
+-----------------   ----------------------  ----------------  ---------------
+Price               Price per Night in USD  0 to 1000         No Missing Data
+Overall Rating      Rating out of 100       0 to 100          N/A
+Latitude            Latitude of listing     37.7000 to 37.8000      No Missing Data
+Longitude           Longitude of listing    -123.0000 to -122.0000      No Missing Data
+-----------------   ----------------------  ----------------  ---------------
+
+# Why these Variables?
+Price: We will use Price as one of our main response variables. 
+
+Overall Rating: We will use Overall Rating as one of our main response variables and will then use it as an explanatory variable to predict Price of listing. Please note, some listings do not have any ratings or reviews. The missing data is denoted with N/A.
+
+Latitude: The latitude of the listing is a value between 37.7000 and 37.8000 which is the latitude of the area that San Fransisco spans.  
+
+Longitude: The longitude of the listing is a value between -123.0000 and -122.0000 which is the longitude of the area that San Fransisco spans.
+
+
+
+
+
