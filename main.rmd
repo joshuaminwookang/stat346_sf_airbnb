@@ -1,0 +1,28 @@
+---
+title: |
+  | STAT 346 Final Project 
+  | San Francisco AirBnB Analysis
+author: "Hailey Han, Josh Kang and Jihong Lee"
+date: "Due Monday, April 27"
+header-includes:
+- \usepackage{xcolor}
+- \usepackage{bm} 
+- \usepackage{float}
+- \newcommand{\benum}{\begin{enumerate}}
+- \newcommand{\eenum}{\end{enumerate}}
+- \usepackage{amsmath,amsthm}
+- \floatplacement{figure}{H}
+output: pdf_document
+---
+\vspace{10pt}
+
+**EDA  **
+
+```{r}
+# Read in data set
+data = read.csv("listings.csv")
+
+# Apparently, price is a String not a numberic variaable
+# TODO: clean data
+# hist(data$price)
+```
