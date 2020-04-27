@@ -19,12 +19,88 @@ output: pdf_document
 
 # EDA
 
+For this project, we will be working with \texttt{listings.csv}, a dataset that has 8,111 unique AirBnB listings located in San Francisco. For each listing, we are given information on several aspects, including pricing, rating, information on the host, and neighborhood.
+
 ```{r}
 # Read in data set
 data = read.csv("listings.csv")
+subset <- data[,c("price", "review_scores_rating", "latitude", "longitude")]
 
-# Apparently, price is a String not a numberic variaable
-# TODO: clean data
-# hist(data$price)
+# Make variables
+price <- as.numeric(data$price)
+rating <- data$review_scores_rating
+latitude <- data$latitude
+longitude <- data$longitude
+neighborhood <- data$neighborhood
+```
 
+### Univariate EDA
+
+need help with this code block
+``` {r, results = "asis", include=FALSE}
+datamean <- apply(subset, na.rm=TRUE, 2, mean)
+datavar <- apply(subset, na.rm=TRUE, 2, var)
+datamed <- apply(subset, na.rm=TRUE, 2, median)
+dataiqr <- apply(subset, na.rm=TRUE, 2, IQR)
+
+summary.stat <- data.frame(datamean, datavar, datamed, dataiqr)
+rownames(summary.stat) = c("Price", 
+                           "Rating",
+                           "Latitude",
+                           "Longitude")
+colnames(summary.stat) = c("Mean", "Variance", "Median", "IQR")
+
+library(xtable)
+options(xtable.floating = FALSE)
+options(xtable.timestamp = "")
+print(xtable(summary.stat), comment=FALSE)
+```
+
+``` {r, fig.height = 12, fig.width = 12, fig.cap = "\\label{fig:fig1}Univariate EDA of variables in the AirBnB Listings data subset with breaks = 20"}
+par(mfrow=c(2,2))
+
+hist(price, main="Distribution of Price of Listed AirBnB",
+     xlab="Price of Listed AirBnB", 
+     ylab="Frequency",
+     breaks=20, col="#256788")
+hist(rating, main="Distribution of Rating of Listed AirBnB",
+     xlab="Rating of Listed AirBnB",
+     ylab="Frequency",
+     breaks=20, col="#256788")
+hist(latitude, main="Distribution of Latitude of Listed AirBnB",
+     xlab="Latitude of Listed AirBnB",
+     ylab="Frequency",
+     breaks=20, col="#256788")
+hist(longitude, main="Distribution of Longitude of Listed AirBnB",
+     xlab="Longitude of Listed AirBnB",
+     ylab="Frequency",
+     breaks=20, col="#256788")
+```
+
+### Bivariate EDA
+
+``` {r, echo=FALSE}
+panel.cor <- function(x, y, digits=2, prefix="", cex.cor) 
+{
+    usr <- par("usr"); on.exit(par(usr)) 
+    par(usr = c(0, 1, 0, 1)) 
+    r <- cor(x, y) 
+    txt <- format(c(r, 0.123456789), digits=digits)[1] 
+    txt <- paste(prefix, txt, sep="") 
+    if(missing(cex.cor)) cex<-2  #cex <- 0.8/strwidth(txt) 
+
+    test <- cor.test(x,y) 
+    # borrowed from printCoefmat
+    Signif <- symnum(test$p.value, corr = FALSE, na = FALSE, 
+                  cutpoints = c(0, 0.001, 0.01, 0.05, 0.1, 1),
+                  symbols = c("***", "**", "*", ".", " ")) 
+
+	#text(0.5, 0.5, txt, cex = cex * abs(r)) 
+    text(0.5,0.5,txt,cex=cex)
+	text(.8, .8, Signif, cex=cex, col=2) 
+}
+```
+
+``` {r, fig.height = 12, fig.width = 12, fig.cap = "\\label{fig:fig1}Bivarite EDA of variables in the AirBnB Listings data subset"}
+pairs(subset, lower.panel = panel.cor)
 ```
