@@ -1,3 +1,5 @@
-#STAT 346 Final Project
+# STAT 346 Final Project
 
-Team Outlier
+Team Outlier 1
+
+* Use 'make clean' to clean up knitr mess

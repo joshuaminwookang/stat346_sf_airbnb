@@ -1,8 +1,9 @@
 ---
 title: |
   | STAT 346 Final Project 
-  | San Francisco AirBnB Analysis
-author: "Hailey Han, Josh Kang and Jihong Lee"
+  | Statistical Analysis of San Francisco 
+  | AirBnB Listing Prices and Review Ratings: EDA
+author: "The Outliers 1"
 date: "Due Monday, April 27"
 header-includes:
 - \usepackage{xcolor}
@@ -16,7 +17,7 @@ output: pdf_document
 ---
 \vspace{10pt}
 
-**EDA  **
+# EDA
 
 ```{r}
 # Read in data set
@@ -25,4 +26,5 @@ data = read.csv("listings.csv")
 # Apparently, price is a String not a numberic variaable
 # TODO: clean data
 # hist(data$price)
+
 ```
