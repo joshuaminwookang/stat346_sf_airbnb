@@ -10,18 +10,6 @@ output: pdf_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-## What we need: 
-- Short descriptions on the number of cases in your dataset, and how cases were identified.
-• A table of variable codebook, each row includes the following info corresponds to a single
-variable
-o Variable name
-o Variable label: description of the variable, such as a textural description (what was
-measured, unit)
-o Valid range and variable code: valid range for quantitative variables, and the code for
-categorical variables if any (e.g. 0=no, 1=yes for yes/no variables)
-o Value indicating missing data. e.g. NA, 99999.
-• Source of data (cite any webpage, article, books etc.)
-
 ## About the Cases
 
 We worked with data in the "listings.csv" file that was obtained through the website: https://www.kaggle.com/jeploretizo/san-francisco-airbnb-listings. This dataset has been initially published at Inside Airbnb (http://insideairbnb.com/get-the-data.html). The cases were identified through publicly available information through the Airbnb website. There are 8,111 unique listings and 100 variables that contribute to each listing.
