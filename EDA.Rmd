@@ -31,7 +31,7 @@ price <- as.numeric(data$price)
 rating <- data$review_scores_rating
 latitude <- data$latitude
 longitude <- data$longitude
-neighborhood <- data$neighborhood
+neighborhood <- data$neighbourhood
 ```
 
 ### Univariate EDA
@@ -77,6 +77,41 @@ hist(longitude, main="Distribution of Longitude of Listed AirBnB",
      breaks=20, col="#256788")
 ```
 
+Neighborhood analysis
+We identify the three neighborhoods with the most number of listings: Mission District, SoMa and Western Addition/NoPA; the rest are organized as Other. We create indicator variables for each and explore prices within each neighborhood. 
+
+```{r}
+sort(table(data$neighbourhood))
+subset$nb.MD = ifelse(data$neighbourhood=="Mission District", 1,0)
+subset$nb.SM = ifelse(data$neighbourhood=="SoMA", 1,0)
+subset$nb.WA = ifelse(data$neighbourhood=="Western Addition/NOPA", 1,0)
+subset$nb.Other = ifelse(
+  (data$neighbourhood!="Mission District") &&
+    (data$neighbourhood!="SoMA") &&
+      (data$neighbourhood!="Western Addition/NOPA"), 1,0)
+```
+
+``` {r, fig.height = 12, fig.width = 12, fig.cap = "\\label{fig:fig1}Univariate EDA of Neighborhood varaibles in the AirBnB Listings data subset with breaks = 20"}
+par(mfrow=c(2,2))
+
+hist(subset$price[t(which(subset$nb.MD==1))], main="Distribution of Prices for Listings in the Mission District",
+     xlab="Price of Listed AirBnB", 
+     ylab="Frequency",
+     breaks=20, col="#256788")
+hist(subset$price[t(which(subset$nb.SM==1))], main="Distribution of Prices for Listings in the SoMa Neighborhood",
+     xlab="Price of Listed AirBnB",
+     ylab="Frequency",
+     breaks=20, col="#256788")
+hist(subset$price[t(which(subset$nb.WA==1))], main="Distribution of Prices for Listings in Western Addition/NOPA",
+     xlab="Price of Listed AirBnB",
+     ylab="Frequency",
+     breaks=20, col="#256788")
+hist(subset$price[t(which(subset$nb.Other==1))], main="Distribution of Prices for Listings in Other Neighborhoods",
+     xlab="Price of Listed AirBnB",
+     ylab="Frequency",
+     breaks=20, col="#256788")
+```
+
 ### Bivariate EDA
 
 ``` {r, echo=FALSE}
@@ -104,3 +139,4 @@ panel.cor <- function(x, y, digits=2, prefix="", cex.cor)
 ``` {r, fig.height = 12, fig.width = 12, fig.cap = "\\label{fig:fig1}Bivarite EDA of variables in the AirBnB Listings data subset"}
 pairs(subset, lower.panel = panel.cor)
 ```
+
