@@ -1,10 +1,4 @@
 ---
-title: |
-  | STAT 346 Final Project 
-  | Statistical Analysis of San Francisco 
-  | AirBnB Listing Prices and Review Ratings: EDA
-author: "The Outliers 1"
-date: "Due Monday, April 27"
 header-includes:
 - \usepackage{xcolor}
 - \usepackage{bm} 
@@ -17,7 +11,13 @@ output: pdf_document
 ---
 \vspace{10pt}
 
-# EDA
+# STAT 346: Statistical Analysis of San Francisco AirBnB Listing Prices and Review Ratings: EDA
+
+The Outliers 1
+
+Due Monday, April 27
+
+## EDA
 
 The dataset that we will use for our project is \texttt{listings.csv}, which includes 8,111 unique listings of AirBnBs in the San Francisco area. The dataset was obtained through the website https://www.kaggle.com/jeploretizo/san-francisco-airbnb-listings. As the second phase in conducting our project, we first ran univariate EDAs for each of the variables that we wanted to look at in the dataset (price, overall rating, latitude, longitude, and neighborhood) and bivariate EDAs between each of the variable pairs. Price is our response variable that we want to predict given different values of the other variables as predictors.
 
@@ -56,7 +56,7 @@ print(xtable(summary.stat), comment=FALSE)
 
 \vspace{20pt}
 
-``` {r, fig.height = 8, fig.width = 12, fig.cap = "\\label{fig:fig1}Univariate EDA of Rating in the AirBnB Listings Dataset with breaks = 40"}
+``` {r, fig.height = 8, fig.width = 12, out.width = '50%', fig.align = "center", fig.cap = "\\label{fig:fig1}Univariate EDA of Rating in the AirBnB Listings Dataset with breaks = 40"}
 hist(rating, main="Distribution of Rating of Listed AirBnB",
      xlab="Rating of Listed AirBnB",
      ylab="Frequency",
@@ -67,7 +67,7 @@ As seen above in Figure \ref{fig:fig1}, the distribution of ratings in the AirBn
 
 ### Bivariate EDA of Relationship Between Price and Rating
 
-``` {r, fig.height = 12, fig.width = 12, fig.cap = "\\label{fig:fig2}Bivarite EDA of Relationship Between Price and Rating in the AirBnB Listings Dataset"}
+``` {r, fig.height = 8, fig.width = 12, out.width = '50%', fig.align = "center", fig.cap = "\\label{fig:fig2}Bivarite EDA of Relationship Between Price and Rating in the AirBnB Listings Dataset"}
 plot(rating, price, pch=16, cex=1)
 ```
 
