@@ -1,0 +1,69 @@
+---
+output: pdf_document
+---
+
+# Determining the Price of San Francisco AirBnB Listings
+#### The Outliers: Hailey han, Joshua Minwoo Kang, Jihong Lee
+
+``` {r}
+
+#### Initial Setup
+
+# read in dataset
+setwd("/Users/jihonglee/Dropbox/Spring-2020/STAT 346/Final Project")
+listings <- read.csv("listings.csv")
+dim(listings)
+
+# choose subset with variables of interest
+listings <- subset(listings, select=c("price", "host_response_rate", "host_is_superhost", "neighbourhood", 
+                                      "latitude", "longitude", "property_type", "room_type", "accommodates", 
+                                      "bathrooms", "bedrooms", "number_of_reviews", "review_scores_rating"))
+
+# organize into variables for later ease
+listings$price <- as.numeric(gsub("[$]", "", listings$price))
+listings$host_response_rate <- as.numeric(gsub("[%]", "", listings$host_response_rate))
+
+# clean of invalid observations
+listings <- listings[complete.cases(listings), ]
+dim(listings)
+
+```
+
+``` {r}
+
+#### Exploratory Data Analysis
+
+# quantitative variables in dataset: price, host response rate, latitude, longitude, accommodates, bathrooms, bedrooms, number of reviews, review_scores_rating
+listings_quant <- subset(listings, select=c("price", "host_response_rate", "latitude", "longitude", "accommodates",
+                                            "bathrooms", "bedrooms", "number_of_reviews", "review_scores_rating"))
+# categorical variables in dataset: host is superhost, neighborhood, property type, room type
+listings_cat <- subset(listings, select=c("host_is_superhost", "neighbourhood", "property_type", "room_type"))
+
+## Univariate EDA
+
+# statistical display of quantitative variables
+l_mean <- apply(listings_quant, 2, mean)
+l_sd <- apply(listings_quant, 2, sd)
+l_med <- apply(listings_quant, 2, median)
+l_iqr <- apply(listings_quant, 2, IQR, na.rm=T)
+l_min <- apply(listings_quant, 2, min)
+l_max <- apply(listings_quant, 2, max)
+
+statsum <- data.frame(l_mean, l_sd, l_med, l_iqr, l_min, l_max)
+rownames(statsum) <- c('Price ($)', 'Host Response Rate (%)', 'Latitude', 'Longitude', 'Number of People Accommodated', 'Number of Bathrooms', 'Number of Bedrooms', 'Number of Reviews', 'Overall Rating')
+colnames(statsum) <- c("Mean", "Standard Deviation", "Median", "IQR", "Minimum", "Maximum")
+statsum
+
+# graphical display of quantitative variables
+par(mfrow=c(3,3))
+quantvars <- with(listings, cbind(price, host_response_rate, latitude, longitude, accommodates, bathrooms, bedrooms, number_of_reviews, review_scores_rating)); quantnum <- 9
+quantnames <- c('Price ($)', 'Host Response Rate (%)', 'Latitude', 'Longitude', 'Number of People Accommodated', 'Number of Bathrooms', 'Number of Bedrooms', 'Number of Reviews', 'Overall Rating')
+for(i in 1:quantnum) {
+  hist(quantvars[, i], main="",
+       xlab=quantnames[i], ylab="Frequency",
+       breaks=30, col="#3C787E")
+}
+
+## Multivariate EDA
+
+```
