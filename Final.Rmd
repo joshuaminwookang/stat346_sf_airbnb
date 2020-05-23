@@ -205,14 +205,13 @@ for(i in 1:catnum) {
 
 ```{r}
 #all variables + two interaction terms 
-lm.all <- lm(log(price)~host_response_rate +accommodates+bathrooms+bedrooms+number_of_reviews+
-               review_scores_rating+host_is_superhost+room_type+
-               property_low+property_high+
+lm.all <- lm(log(price)~host_response_rate +accommodates+bathrooms+bedrooms+log(number_of_reviews)+
+               review_scores_rating+
                  neigh_NO+neigh_DT+neigh_CT+
                  review_scores_rating*neigh_NO+review_scores_rating*neigh_DT+
                  review_scores_rating*neigh_CT+bedrooms*neigh_NO+bedrooms*neigh_DT+bedrooms*neigh_CT+
-                property_high*neigh_NO+ property_high*neigh_DT+ property_high*neigh_CT+
                accommodates*bedrooms,data=listings)
+
 library(lars)
 obj.norm<-lars(model.matrix(lm.all),listings$price,trace=F)
 plot(obj.norm,breaks=F,main="Normalized Variables")
@@ -222,12 +221,20 @@ predict(obj.norm,type="coef")$coefficients[1:10,]
 ```
 
 ```{r}
-lm.lasso <- lm(log(price)~accommodates+bedrooms+review_scores_rating+room_type+property_high+
-                 neigh_NO+neigh_DT+neigh_CT+
-                 review_scores_rating*neigh_NO+review_scores_rating*neigh_DT+
-                 review_scores_rating*neigh_CT+bedrooms*neigh_NO+bedrooms*neigh_DT+bedrooms*neigh_CT+
-                property_high*neigh_NO+ property_high*neigh_DT+ property_high*neigh_CT
-                 ,data=listings)
+lm.lasso <- lm(log(price)~ accommodates + 
+                 host_response_rate + 
+                 bedrooms + bathrooms + 
+                 log(number_of_reviews) + 
+                 review_scores_rating +
+                 room_type + property_high+
+                 neigh_NO + neigh_DT + neigh_CT+
+                 room_type*neigh_NO +
+                 room_type*neigh_DT+
+                 room_type*neigh_CT+
+                 bedrooms*neigh_NO+
+                 bedrooms*neigh_DT+
+                 bedrooms*neigh_CT,
+               data=listings)
 summary(lm.lasso)
 
 # note low adjusted r sq
@@ -244,18 +251,22 @@ qqnorm(lm.lasso$res,pch=16); qqline(lm.lasso$res)
 ```
 
 # Map Plots
-```{r, fig.width=20, fig.height=20}
+```{r, fig.width=20, fig.height=20, cache=TRUE}
 library("ggmap")
 library("ggplot2")
 library("forcats")
 
-sf <- c(left =  -123, bottom = 36, right = -121, top = 38)
-ggmap(get_stamenmap(sf, zoom = 12, maptype = "toner-lite")) +
-  geom_point(data = listings, aes(x = longitude, y = latitude), color = "red", size = 0.1)
+sf <- c(left =  min(listings$longitude), 
+        bottom = min(listings$latitude), 
+        right = max(listings$longitude), 
+        top = max(listings$latitude))
+ggmap(get_stamenmap(sf, zoom = 13, maptype = "toner-lite")) +
+  geom_point(data = listings, aes(x = longitude, y = latitude,
+                                  color = log(price), size = 2))
 ```
 
-```{r, fig.width=20, fig.height=20}
+```{r, fig.width=20, fig.height=20, cache=TRUE}
 ggmap(get_stamenmap(sf, zoom = 14, maptype = "toner"), legend = "right") +
-  geom_point(data = listings, aes(x = longitude, y = latitude), color = "red", size = 0.3)+
+  geom_point(data = listings, aes(x = longitude, y = latitude), color = "red", size = 2)+
   facet_wrap(~ host_is_superhost)
 ```
