@@ -1,0 +1,199 @@
+---
+output: pdf_document
+---
+
+# Determining the Price of San Francisco AirBnB Listings
+#### The Outliers: Hailey han, Joshua Minwoo Kang, Jihong Lee
+
+``` {r, warning=FALSE}
+#### Initial Setup
+
+# read in dataset
+setwd(".")
+listings <- read.csv("listings.csv")
+dim(listings)
+
+# choose subset with variables of interest
+listings <- subset(listings, select=c("price", "host_response_rate", "host_is_superhost", "neighbourhood", 
+                                      "latitude", "longitude", "property_type", "room_type", "accommodates", 
+                                      "bathrooms", "bedrooms", "number_of_reviews", "review_scores_rating"))
+
+# organize into variables for later ease
+listings$price <- as.numeric(gsub("[$]", "", listings$price))
+listings$host_response_rate <- as.numeric(gsub("[%]", "", listings$host_response_rate))
+
+# clean of invalid observations
+listings <- listings[complete.cases(listings), ]
+dim(listings)
+listings$price[3074] <- 1 # fix 0 price entry for log(price) transformation
+
+
+#### Exploratory Data Analysis
+
+# quantitative variables in dataset: price, host response rate, latitude, longitude, accommodates, bathrooms, bedrooms, number of reviews, review_scores_rating
+listings_quant <- subset(listings, select=c("price", "host_response_rate", "latitude", "longitude", "accommodates",
+                                            "bathrooms", "bedrooms", "number_of_reviews", "review_scores_rating"))
+# categorical variables in dataset: host is superhost, neighborhood, property type, room type
+listings_cat <- subset(listings, select=c("host_is_superhost", "neighbourhood", "property_type", "room_type"))
+
+## Univariate EDA
+
+# statistical display of quantitative variables
+l_mean <- apply(listings_quant, 2, mean)
+l_sd <- apply(listings_quant, 2, sd)
+l_med <- apply(listings_quant, 2, median)
+l_iqr <- apply(listings_quant, 2, IQR, na.rm=T)
+l_min <- apply(listings_quant, 2, min)
+l_max <- apply(listings_quant, 2, max)
+
+statsum <- data.frame(l_mean, l_sd, l_med, l_iqr, l_min, l_max)
+rownames(statsum) <- c('Price ($)', 'Host Response Rate (%)', 'Latitude', 'Longitude', 'Number of People Accommodated', 'Number of Bathrooms', 'Number of Bedrooms', 'Number of Reviews', 'Overall Rating')
+colnames(statsum) <- c("Mean", "Standard Deviation", "Median", "IQR", "Minimum", "Maximum")
+```
+
+```{r, results='asis'}
+# Print summary
+library(xtable)
+print(xtable(statsum, caption = "Summary of continuous variables"), comment=FALSE, caption.placement = 'top')
+```
+
+``` {r, fig.width=12, fig.height=10}
+# graphical display of quantitative variables
+par(mfrow=c(3,3))
+quantvars <- with(listings, cbind(price, host_response_rate, latitude, longitude, accommodates, bathrooms, bedrooms, number_of_reviews, review_scores_rating)); quantnum <- 9
+quantnames <- c('Price ($)', 'Host Response Rate (%)', 'Latitude', 'Longitude', 'Number of People Accommodated', 'Number of Bathrooms', 'Number of Bedrooms', 'Number of Reviews', 'Overall Rating')
+for(i in 1:quantnum) {
+  hist(quantvars[, i], main="",
+       xlab=quantnames[i], ylab="Frequency",
+       breaks=30, col="#3C787E")
+}
+```
+
+``` {r, echo=FALSE}
+
+# Neighborhoods-> we group in to four groups:  Downtown, Northern residential areas, Central SF and the Outskirts
+
+#  SF Downtown; Financial District; Bougey Area
+Downtown = listings$neighbourhood[c(7,11,14,23,24,26,29,30,31,33,37,45,48,52)]
+listings$neigh_DT = 1*(listings$neighbourhood %in% Downtown)
+# Northern residential area; bougey, Victorian and posh
+
+Northern = listings$neighbourhood[ c(5,10,16,18,22,25,27,49,54)]
+listings$neigh_NO = 1*(listings$neighbourhood %in% Northern)
+
+# Hip / central residential areas; UCSF; ethnic groups; 
+Central = listings$neighbourhood[ c(1,2,3,6,8,9,12,13,15,20,25)]
+listings$neigh_CT = 1*(listings$neighbourhood %in% Central)
+
+# Residential areas located northwest/south/southest of SF
+Outskirts = listings$neighbourhood[c(3,17,19,21,28,32,34,26,28,39,40,41,42,43,44,46,47,50,51,53,55)]
+listings$neigh_Other = 1*(listings$neighbourhood %in% Outskirts)
+```
+
+```{r}
+# Group property types
+
+# Based on EDA barplot of log(price) ~ property_type
+# (1) properties with higher prices: Villa, Resort, Hotel, and Boutique Hotel
+expensive_property = c("Villa", "Resort", "Hotel", "Loftl")
+listings$property_high =  1*(listings$property_type %in% expensive_property)
+
+# (2) Properties with lower prices: Hostel and Bed and breakfast
+cheaper_property = c("Hostel", "Bed and breakfast")
+listings$property_low =  1*(listings$property_type %in% cheaper_property)
+```
+
+``` {r}
+# CATEGORICAL VARIABLES:
+
+# statistical display of categorical variables
+superhost_tab <- table(listings$host_is_superhost)
+property_tab <- table(listings$property_type)
+room_tab <- table(listings$room_type)
+downtown_tab <- table(listings$neigh_DT)
+northern_tab <- table(listings$neigh_NO)
+central_tab <- table(listings$neigh_CT)
+other_neigh_tab <- table(listings$neigh_Other)
+property_high_tab <- table(listings$property_high)
+property_low_tab <- table(listings$property_low)
+
+
+superhost_tab
+property_tab
+room_tab
+downtown_tab
+northern_tab
+central_tab
+other_neigh_tab
+```
+
+``` {r, fig.width=12, fig.height=10, out.width='80%', fig.align="center"}
+# graphical display of categorical variables
+par(mfrow=c(3,2))
+barplot(superhost_tab, main="",
+          xlab="Superhost", ylab="Frequency",
+          col="#3C787E")
+barplot(downtown_tab, main="",
+          xlab="Neighborhood: Downtown", ylab="Frequency",
+          col="#3C787E")
+barplot(northern_tab, main="",
+          xlab="Neighborhood: Northern SF", ylab="Frequency",
+          col="#3C787E")
+barplot(central_tab, main="",
+          xlab="Neighborhood: Central SF", ylab="Frequency",
+          col="#3C787E")
+barplot(property_tab, main="",
+          xlab="Property Type", ylab="Frequency",
+          col="#3C787E")
+barplot(room_tab, main="",
+          xlab="Room Type", ylab="Frequency",
+          col="#3C787E")
+```
+
+``` {r, fig.width=20, fig.height=18}
+## Multivariate EDA
+
+# define panel.cor function to use as personalized pairs plot
+panel.cor <- function(x, y, digits=2, prefix="", cex.cor) {
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  r <- cor(x, y)
+  txt <- format(c(r, 0.123456789), digits=digits)[1]
+  txt <- paste(prefix, txt, sep="")
+  if(missing(cex.cor)) cex <- 2
+  test <- cor.test(x, y)
+  signif <- symnum(test$p.value, corr=FALSE, na=FALSE,
+                   cutpoints = c(0, 0.001, 0.01, 0.05, 0.1, 1),
+                   symbols = c("***", "**", "*", ".", " "))
+  text(0.5, 0.5, txt, cex=cex)
+  text(0.8, 0.8, signif, cex=cex, col=2)
+}
+
+# relationship between quantitative variables
+pairs(listings_quant, lower.panel=panel.cor)
+```
+
+``` {r, fig.width=20, fig.height=20}
+# relationship between categorical variables
+par(mfrow=c(3,3))
+catvars <- with(
+  listings, 
+  cbind(host_is_superhost, room_type, neigh_DT, neigh_NO, neigh_CT, property_high, property_low));
+catnum <- 7
+catnames <- 
+  c('Superhost', 'Property Type', 'Room Type', 
+    'Neighborhood: Downtown',  'Neighborhood: Northern SF',
+     'Neighborhood: Central',  'Property: Villa, Resort, Hotel or Loft',
+     'Property: Hostel or Bed and Breakfasts')
+
+for(i in 1:catnum) {
+  boxplot(log(listings$price) ~ catvars[, i], main="",
+          ylab="Log Price of AirBnB Listing ($)",
+          xlab=catnames[i])
+}
+
+```
+
+
+
+
