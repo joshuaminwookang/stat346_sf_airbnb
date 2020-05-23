@@ -194,6 +194,33 @@ for(i in 1:catnum) {
 
 ```
 
+```{r}
+#all variables + two interaction terms 
+lm.all <- lm(log(price)~host_response_rate + latitude+longitude+accommodates+bathrooms+bedrooms+number_of_reviews+ review_scores_rating+host_is_superhost+room_type+property_low+property_high+neigh_CT+neigh_NO+neigh_DT+neigh_Other+neigh_NO*bedrooms+ accommodates*bedrooms,data=listings)
+library(lars)
+obj.norm<-lars(model.matrix(lm.all),listings$price,trace=F)
+plot(obj.norm,breaks=F,main="Normalized Variables")
+```
+```{r}
+predict(obj.norm,type="coef")$coefficients[1:8,]
+```
+
+```{r}
+lm.lasso <- lm(log(price)~ latitude +accommodates+bedrooms+review_scores_rating+room_type+bedrooms*neigh_NO,data=listings)
+summary(lm.lasso)
+# note low adjusted r sq
+```
+
+```{r}
+par(mfrow=c(1,2))
+# lasso model diagnostics
+plot(lm.lasso$fit,lm.lasso$res,pch=16,cex.lab=1.3,cex.axis=1.3,
+       xlab="Predicted log(price)",ylab="Residuals")
+abline(h=0,lwd=2,col=2)
+#not fitted on tails...
+qqnorm(lm.lasso$res,pch=16); qqline(lm.lasso$res)
+```
+
 
 
 
