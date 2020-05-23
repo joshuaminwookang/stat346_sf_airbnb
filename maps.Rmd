@@ -10,24 +10,22 @@ output: pdf_document
 
 # read in dataset
 setwd(".")
-listings_raw <- read.csv("listings.csv")
-dim(listings_raw)
+listings <- read.csv("listings.csv")
+dim(listings)
 
 # choose subset with variables of interest
-listings_raw <- subset(listings_raw, select=c("price", "host_response_rate", "host_is_superhost", "neighbourhood", 
+listings <- subset(listings, select=c("price", "host_response_rate", "host_is_superhost", "neighbourhood", 
                                       "latitude", "longitude", "property_type", "room_type", "accommodates", 
                                       "bathrooms", "bedrooms", "number_of_reviews", "review_scores_rating"))
 
 # organize into variables for later ease
-listings_raw$price <- as.numeric(gsub("[$]", "", listings_raw$price))
-listings_raw$host_response_rate <- as.numeric(gsub("[%]", "", listings_raw$host_response_rate))
+listings$price <- as.numeric(gsub("[$]", "", listings$price))
+listings$host_response_rate <- as.numeric(gsub("[%]", "", listings$host_response_rate))
 
 # clean of invalid observations
-listings_raw <- listings_raw[complete.cases(listings_raw), ]
-
-# fix 0 price entry for log(price) transformation ( get rid of OUTLIER)
-listings = listings_raw[-which(listings_raw$price == 0),]
+listings <- listings[complete.cases(listings), ]
 dim(listings)
+listings$price[3074] <- 1 # fix 0 price entry for log(price) transformation
 
 
 #### Exploratory Data Analysis
@@ -76,23 +74,20 @@ for(i in 1:quantnum) {
 # Neighborhoods-> we group in to four groups:  Downtown, Northern residential areas, Central SF and the Outskirts
 
 #  SF Downtown; Financial District; Bougey Area
-Downtown = unique(listings$neighbourhood)[c(7,11,14,23,24,26,29,30,31,33,37,45,48,52)]
+Downtown = listings$neighbourhood[c(7,11,14,23,24,26,29,30,31,33,37,45,48,52)]
 listings$neigh_DT = 1*(listings$neighbourhood %in% Downtown)
 # Northern residential area; bougey, Victorian and posh
 
-Northern = unique(listings$neighbourhood)[ c(5,10,16,18,22,25,27,49,54)]
+Northern = listings$neighbourhood[ c(5,10,16,18,22,25,27,49,54)]
 listings$neigh_NO = 1*(listings$neighbourhood %in% Northern)
 
 # Hip / central residential areas; UCSF; ethnic groups; 
-Central = unique(listings$neighbourhood)[ c(1,2,3,6,8,9,12,13,15,20,25)]
+Central = listings$neighbourhood[ c(1,2,3,6,8,9,12,13,15,20,25)]
 listings$neigh_CT = 1*(listings$neighbourhood %in% Central)
 
 # Residential areas located northwest/south/southest of SF
-Outskirts = unique(listings$neighbourhood)[c(3,17,19,21,28,32,34,26,28,39,40,41,42,43,44,46,47,50,51,53,55)]
+Outskirts = listings$neighbourhood[c(3,17,19,21,28,32,34,26,28,39,40,41,42,43,44,46,47,50,51,53,55)]
 listings$neigh_Other = 1*(listings$neighbourhood %in% Outskirts)
-
-# Just for plotting
-listings$neigh_PLOT =  1*(listings$neighbourhood %in% Northern) + 2*(listings$neighbourhood %in% Downtown)+3*(listings$neighbourhood %in% Central)
 ```
 
 ```{r}
@@ -199,54 +194,13 @@ for(i in 1:catnum) {
 
 ```
 
-```{r}
-#all variables + two interaction terms 
-lm.all <- lm(log(price)~host_response_rate +accommodates+bathrooms+bedrooms+number_of_reviews+
-               review_scores_rating+host_is_superhost+room_type+
-               property_low+property_high+
-                 neigh_NO+neigh_DT+neigh_CT+
-                 review_scores_rating*neigh_NO+review_scores_rating*neigh_DT+
-                 review_scores_rating*neigh_CT+bedrooms*neigh_NO+bedrooms*neigh_DT+bedrooms*neigh_CT+
-                property_high*neigh_NO+ property_high*neigh_DT+ property_high*neigh_CT+
-               accommodates*bedrooms,data=listings)
-library(lars)
-obj.norm<-lars(model.matrix(lm.all),listings$price,trace=F)
-plot(obj.norm,breaks=F,main="Normalized Variables")
-```
-```{r}
-predict(obj.norm,type="coef")$coefficients[1:10,]
-```
+\newpage
+# 3 Model and Results
+(a) Analytic Methods: 
 
-```{r}
-lm.lasso <- lm(log(price)~accommodates+bedrooms+review_scores_rating+room_type+property_high+
-                 neigh_NO+neigh_DT+neigh_CT+
-                 review_scores_rating*neigh_NO+review_scores_rating*neigh_DT+
-                 review_scores_rating*neigh_CT+bedrooms*neigh_NO+bedrooms*neigh_DT+bedrooms*neigh_CT+
-                property_high*neigh_NO+ property_high*neigh_DT+ property_high*neigh_CT
-                 ,data=listings)
-summary(lm.lasso)
+We use a Multiple Linear Regression Normal Error model to describe the relationship between log of AirBnB price and 
+our predictor variables.
 
-# note low adjusted r sq
-```
-
-```{r}
-par(mfrow=c(1,2))
-# lasso model diagnostics
-plot(lm.lasso$fit,lm.lasso$res,pch=16,cex.lab=1.3,cex.axis=1.3,
-       xlab="Predicted log(price)",ylab="Residuals")
-abline(h=0,lwd=2,col=2)
-#not fitted on tails...
-qqnorm(lm.lasso$res,pch=16); qqline(lm.lasso$res)
-```
-
-
-```{r,fig.width=8, fig.height=3, echo=FALSE, results="asis"}
-plot(log(price) ~ log(review_scores_rating), data = listings, col =  c("red", "blue","black","yellow"))
-legend("topleft", legend = c("Northern", "Downtown", "Central SF", "Other"),
-       pch = 19, col =  c("red", "blue","black","yellow"))
-```
-
-# Map Plots
 ```{r, fig.width=20, fig.height=20}
 library("ggmap")
 library("dplyr")
@@ -255,9 +209,9 @@ sf <- c(left = -122.52, bottom = 25.75, right = -122.4, top = 37.82)
 ggmap(get_stamenmap(sf, zoom = 12, maptype = "toner-lite")) +
   geom_point(data = listings, aes(x = longitude, y = latitude), color = "red", size = 0.1)
 ```
-
 ```{r, fig.width=20, fig.height=20}
 ggmap(get_stamenmap(sf, zoom = 14, maptype = "toner"), legend = "right") +
   geom_point(data = listings, aes(x = longitude, y = latitude), color = "red", size = 0.3)+
   facet_wrap(~ host_is_superhost)
 ```
+
