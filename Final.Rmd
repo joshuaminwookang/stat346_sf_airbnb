@@ -76,23 +76,29 @@ for(i in 1:quantnum) {
 # Neighborhoods-> we group in to four groups:  Downtown, Northern residential areas, Central SF and the Outskirts
 
 #  SF Downtown; Financial District; Bougey Area
-Downtown = unique(listings$neighbourhood)[c(7,11,14,23,24,26,29,30,31,33,37,45,48,52)]
+Downtown = unique(listings$neighbourhood)[c(7,11,14,23,24,26,29,30,31,33,35,37,45,48,52)]
 listings$neigh_DT = 1*(listings$neighbourhood %in% Downtown)
 # Northern residential area; bougey, Victorian and posh
 
-Northern = unique(listings$neighbourhood)[ c(5,10,16,18,22,25,27,49,54)]
+Northern = unique(listings$neighbourhood)[ c(5,10,16,18,22,27,49,54)]
 listings$neigh_NO = 1*(listings$neighbourhood %in% Northern)
 
 # Hip / central residential areas; UCSF; ethnic groups; 
-Central = unique(listings$neighbourhood)[ c(1,2,3,6,8,9,12,13,15,20,25)]
+Central = unique(listings$neighbourhood)[ c(1,2,4,6,8,9,12,13,15,20,25)]
 listings$neigh_CT = 1*(listings$neighbourhood %in% Central)
 
 # Residential areas located northwest/south/southest of SF
-Outskirts = unique(listings$neighbourhood)[c(3,17,19,21,28,32,34,26,28,39,40,41,42,43,44,46,47,50,51,53,55)]
+Outskirts = unique(listings$neighbourhood)[c(3,17,19,21,28,32,34,36,38,39,40,41,42,43,44,46,47,50,51,53,55)]
 listings$neigh_Other = 1*(listings$neighbourhood %in% Outskirts)
 
 # Just for plotting
-listings$neigh_PLOT =  1*(listings$neighbourhood %in% Northern) + 2*(listings$neighbourhood %in% Downtown)+3*(listings$neighbourhood %in% Central)
+
+library(dplyr)
+listings <- listings %>%
+  mutate(neigh_PLOT = ifelse(listings$neighbourhood %in% Northern,"Northern",
+                      ifelse(listings$neighbourhood %in% Downtown,"Downtown",
+                      ifelse(listings$neighbourhood %in% Central,"Central", "Other"))))
+
 ```
 
 ```{r}
@@ -180,16 +186,14 @@ pairs(listings_quant, lower.panel=panel.cor)
 
 ``` {r, fig.width=20, fig.height=20}
 # relationship between categorical variables
-par(mfrow=c(3,3))
+par(mfrow=c(2,3))
 catvars <- with(
   listings, 
-  cbind(host_is_superhost, room_type, neigh_DT, neigh_NO, neigh_CT, property_high, property_low));
-catnum <- 7
+  cbind(host_is_superhost, room_type, neigh_PLOT, property_high, property_low));
+catnum <- 5
 catnames <- 
   c('Superhost', 'Property Type', 'Room Type', 
-    'Neighborhood: Downtown',  'Neighborhood: Northern SF',
-     'Neighborhood: Central',  'Property: Villa, Resort, Hotel or Loft',
-     'Property: Hostel or Bed and Breakfasts')
+    'Neighborhoods','Property: Hostel or Bed and Breakfasts')
 
 for(i in 1:catnum) {
   boxplot(log(listings$price) ~ catvars[, i], main="",
@@ -239,17 +243,9 @@ abline(h=0,lwd=2,col=2)
 qqnorm(lm.lasso$res,pch=16); qqline(lm.lasso$res)
 ```
 
-
-```{r,fig.width=8, fig.height=3, echo=FALSE, results="asis"}
-plot(log(price) ~ log(review_scores_rating), data = listings, col =  c("red", "blue","black","yellow"))
-legend("topleft", legend = c("Northern", "Downtown", "Central SF", "Other"),
-       pch = 19, col =  c("red", "blue","black","yellow"))
-```
-
 # Map Plots
 ```{r, fig.width=20, fig.height=20}
 library("ggmap")
-library("dplyr")
 library("forcats")
 sf <- c(left = -122.52, bottom = 25.75, right = -122.4, top = 37.82)
 ggmap(get_stamenmap(sf, zoom = 12, maptype = "toner-lite")) +
